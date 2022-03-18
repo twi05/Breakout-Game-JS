@@ -46,9 +46,14 @@ Heyy Canvas is not supported.
                 ctx.clearRect(0, 0, canvas.width, canvas.height)
                 x += dx;
                 y += dy;
-                checkgameOver(x, y);
-                drawCircle(x, y)
+                if (!checkgameOver(x, y))
+                    drawCircle(x, y)
             }, 20);
+        }
+
+        function setVariables(x, y) {
+
+
         }
 
         function checkgameOver(x, y) {
