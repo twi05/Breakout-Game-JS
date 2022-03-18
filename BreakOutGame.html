@@ -1,0 +1,83 @@
+<!-- What I have learned:
+Canvas 
+
+
+
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BreakOut Game</title>
+</head>
+
+<body>
+
+    <canvas id="canvas" height="300" style="border: 2px solid black; border-bottom: 2px solid brown;">
+Heyy Canvas is not supported.
+    </canvas>
+    <button onclick="startGame()">Start</button>
+    <script>
+        'use strict'
+        const canvas = document.getElementById('canvas')
+        const ctx = canvas.getContext("2d")
+
+        const canvasH = canvas.height;
+        const canvasW = canvas.width;
+
+        let x = canvasW / 2;
+        let y = canvasH - 10;
+
+        let dx = 5;
+        let dy = -5;
+        drawCircle(x, y)
+        let interval;
+        startGame(x, y);
+
+
+
+        function startGame() {
+            interval = setInterval(() => {
+                detectCollision(x, y);
+                ctx.clearRect(0, 0, canvas.width, canvas.height)
+                x += dx;
+                y += dy;
+                checkgameOver(x, y);
+                drawCircle(x, y)
+            }, 20);
+        }
+
+        function checkgameOver(x, y) {
+            if (y + dy === canvas.height) {
+                alert('game over')
+                clearInterval(interval);
+                x = canvasW / 2;
+                y = canvasH - 10;
+            }
+        }
+
+        function detectCollision(x, y) {
+            if (x + dx >= canvas.width || x + dx <= 0) {
+                dx *= -1;
+            }
+            if (y + dy >= canvas.width || y + dy <= 0) {
+                dy *= -1;
+            }
+        }
+
+        function drawCircle(x, y) {
+            ctx.beginPath()
+            ctx.arc(x, y, 10, 0, 2 * Math.PI, false)
+            ctx.fillStyle = "green"
+            ctx.fill()
+            ctx.stroke()
+            ctx.closePath()
+        }
+    </script>
+</body>
+
+</html>
