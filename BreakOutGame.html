@@ -9,78 +9,157 @@ Canvas
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BreakOut Game</title>
 </head>
 
 <body>
-
-    <canvas id="canvas" height="300" style="border: 2px solid black; border-bottom: 2px solid brown;">
-Heyy Canvas is not supported.
+    <canvas id="canvas" height="300" style="border: 2px solid black; border-bottom: 2px solid brown">
+      Heyy Canvas is not supported.
     </canvas>
     <button onclick="startGame()">Start</button>
-    <script>
-        'use strict'
-        const canvas = document.getElementById('canvas')
-        const ctx = canvas.getContext("2d")
 
+    <script>
+        "use strict";
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        let x, y, dx, dy, interval, paddleW, paddleX, paddleY, radius;
         const canvasH = canvas.height;
         const canvasW = canvas.width;
 
-        let x = canvasW / 2;
-        let y = canvasH - 10;
-
-        let dx = 5;
-        let dy = -5;
-        drawCircle(x, y)
-        let interval;
-        startGame(x, y);
+        let leftPressed = false;
+        let rightPressed = false;
 
 
+        function paddleNavigation() {
+            document.addEventListener("keyup", handelKeyUp);
+            document.addEventListener("keydown", handelKeyDown);
+
+            function handelKeyDown(e) {
+                // console.log(e);
+                if (e.key === "ArrowLeft") {
+                    leftPressed = true;
+
+                }
+                if (e.key === "ArrowRight") {
+                    rightPressed = true;
+                }
+            }
+
+            function handelKeyUp(e) {
+                if (e.key === "ArrowRight") {
+                    rightPressed = false;
+                }
+                if (e.key === "ArrowLeft") {
+                    leftPressed = false;
+                }
+            }
+        }
+
+
+        startGame();
+        setVariables();
+        drawBall();
+        drawPaddle();
+        drawBricks();
+
+        function drawBricks() {
+
+            for (let j = 0; j < 3; j++) {
+
+
+                for (let i = 0; i < 6; i++) {
+                    const brickOffset = 8;
+                    const brickW = 40;
+                    ctx.beginPath();
+                    ctx.rect(10 + i * (brickW + brickOffset), 20 + (10 + brickOffset) * j, brickW, 10);
+                    ctx.fillStyle = ""
+                    ctx.fill()
+                    ctx.closePath();
+
+                }
+            }
+
+        }
 
         function startGame() {
-            interval = setInterval(() => {
-                detectCollision(x, y);
-                ctx.clearRect(0, 0, canvas.width, canvas.height)
-                x += dx;
-                y += dy;
-                if (!checkgameOver(x, y))
-                    drawCircle(x, y)
-            }, 20);
-        }
-
-        function setVariables(x, y) {
-
-
-        }
-
-        function checkgameOver(x, y) {
-            if (y + dy === canvas.height) {
-                alert('game over')
-                clearInterval(interval);
-                x = canvasW / 2;
-                y = canvasH - 10;
+            paddleNavigation();
+            if (!interval) {
+                interval = setInterval(() => {
+                    detectCollision();
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    x += dx;
+                    y += dy;
+                    if (!checkgameOver(x, y)) {
+                        drawBall();
+                        drawPaddle();
+                        drawBricks();
+                    }
+                }, 20);
             }
         }
 
-        function detectCollision(x, y) {
-            if (x + dx >= canvas.width || x + dx <= 0) {
+        function setVariables() {
+            radius = 10;
+            x = canvasW / 2;
+            y = canvasH - radius;
+            dx = 5;
+            dy = -5;
+            paddleW = 50;
+            paddleX = canvasW / 2 - paddleW / 2;
+            paddleY = canvasH - radius;
+        }
+
+        function checkgameOver() {
+            if (y + dy === canvas.height) {
+                alert("game over");
+                // console.log(interval)
+                clearInterval(interval);
+                interval = null;
+                setVariables();
+
+            }
+        }
+
+        function detectCollision() {
+            if (x + dx >= canvasW || x + dx <= 0) {
                 dx *= -1;
             }
-            if (y + dy >= canvas.width || y + dy <= 0) {
+            if (y + dy > canvasH - radius) {
+
+                if (x + dx > paddleX && x + dx < (paddleX + paddleW)) {
+                    dy = -dy;
+                }
+            }
+
+            if (y + dy <= 0) {
                 dy *= -1;
             }
+
         }
 
-        function drawCircle(x, y) {
-            ctx.beginPath()
-            ctx.arc(x, y, 10, 0, 2 * Math.PI, false)
-            ctx.fillStyle = "green"
-            ctx.fill()
-            ctx.stroke()
-            ctx.closePath()
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+            ctx.fillStyle = "green";
+            ctx.fill();
+            ctx.stroke();
+            ctx.closePath();
+        }
+
+        function drawPaddle() {
+            if (leftPressed && paddleX > 0)
+                paddleX -= 5;
+            if (rightPressed && (paddleX + paddleW) < canvasW)
+                paddleX += 5;
+            ctx.beginPath();
+            ctx.rect(paddleX, paddleY, paddleW, 20);
+            ctx.fillStyle = "green";
+            ctx.fill();
+            ctx.stroke();
+            ctx.closePath();
         }
     </script>
 </body>
