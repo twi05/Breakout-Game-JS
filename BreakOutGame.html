@@ -19,18 +19,177 @@ Canvas
     <canvas id="canvas" height="300" style="border: 2px solid black; border-bottom: 2px solid brown">
       Heyy Canvas is not supported.
     </canvas>
+    <p>Your Score is : <span id="score"></span>
+    </p>
     <button onclick="startGame()">Start</button>
 
     <script>
         "use strict";
+
+
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
-        let x, y, dx, dy, interval, paddleW, paddleX, paddleY, radius;
+        let x, y, dx, dy, interval, paddleW, paddleX, paddleY, radius, bricks = [],
+            score = 0,
+            brickOffset,
+            brickW,
+            brickH, brickX, brickY;
+        const scoreTag = document.getElementById("score");
+        scoreTag.innerHTML = score;
         const canvasH = canvas.height;
         const canvasW = canvas.width;
 
         let leftPressed = false;
         let rightPressed = false;
+
+
+
+        paddleNavigation();
+        startGame();
+        setVariables();
+        drawBall();
+        drawPaddle();
+        createBrickArray();
+
+        function createBrickArray() {
+
+            for (let j = 0; j < 3; j++) {
+                bricks[j] = [];
+                for (let i = 0; i < 6; i++) {
+                    bricks[j][i] = {
+                        x: 0,
+                        y: 0,
+                        visibility: true
+                    }
+                }
+            }
+        }
+
+        function drawBricks() {
+            for (let j = 0; j < 3; j++) {
+
+                for (let i = 0; i < 6; i++) {
+                    if (bricks[j][i].visibility) {
+                        const brickX = 10 + i * (brickW + brickOffset);
+                        const brickY = 20 + (10 + brickOffset) * j;
+                        bricks[j][i].x = brickX;
+                        bricks[j][i].y = brickY;
+
+                        ctx.beginPath();
+                        ctx.rect(brickX, brickY, brickW, brickH);
+                        ctx.fillStyle = "blue"
+                        ctx.fill()
+                        ctx.closePath();
+                    }
+                }
+            }
+        }
+
+        // console.log(bricks)
+        function startGame() {
+
+            if (!interval) {
+                interval = setInterval(() => {
+                    detectCollision();
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    x += dx;
+                    y += dy;
+                    if (!checkgameOver(x, y)) {
+                        drawBall();
+                        drawPaddle();
+                        drawBricks();
+                    }
+                }, 20);
+            }
+        }
+
+
+        function setVariables() {
+            radius = 10;
+            x = canvasW / 2;
+            y = canvasH - radius;
+            dx = 5;
+            dy = -5;
+            paddleW = 50;
+            paddleX = canvasW / 2 - paddleW / 2;
+            paddleY = canvasH - radius;
+            brickOffset = 8,
+                brickW = 40,
+                brickH = 10;
+        }
+
+        function checkgameOver() {
+            if (y + dy === canvas.height) {
+                alert("game over");
+                // console.log(interval)
+                clearInterval(interval);
+                interval = null;
+                setVariables();
+            }
+        }
+
+        function checkYouWon() {
+            if (score === 18) {
+                alert("You Won!!");
+                clearInterval(interval);
+                interval = null;
+                setVariables();
+            }
+        }
+
+        function detectCollision() {
+            if (x + dx >= canvasW || x + dx <= 0) {
+                dx *= -1;
+            }
+            if (y + dy > canvasH - radius) {
+                if (x + dx > paddleX && x + dx < (paddleX + paddleW)) {
+                    dy = -dy;
+                    dx = dx + (x + dx - paddleX) / 100;
+                }
+            }
+            if (y + dy <= 0) {
+                dy *= -1;
+            }
+
+            for (let b = 0; b < bricks.length; b++) {
+                for (let i = 0; i < bricks[b].length; i++) {
+                    const brick = bricks[b][i];
+                    if (bricks[b][i].visibility) {
+                        if (x > brick.x && x < (brick.x + brickW) && y > brick.y && y < (brick.y + brickH)) {
+                            bricks[b][i].visibility = false;
+                            score += 1;
+                            checkYouWon()
+                            scoreTag.innerHTML = score;
+                            dy *= -1;
+                        }
+                    }
+                }
+            }
+
+        }
+
+
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+            ctx.fillStyle = "green";
+            ctx.fill();
+            ctx.stroke();
+            ctx.closePath();
+        }
+
+        function drawPaddle() {
+            if (leftPressed)
+                paddleX -= 5;
+            if (rightPressed)
+                paddleX += 5;
+            ctx.beginPath();
+            ctx.rect(paddleX, paddleY, paddleW, 20);
+            ctx.fillStyle = "green";
+            ctx.fill();
+            ctx.stroke();
+            ctx.closePath();
+        }
 
 
         function paddleNavigation() {
@@ -56,110 +215,6 @@ Canvas
                     leftPressed = false;
                 }
             }
-        }
-
-
-        startGame();
-        setVariables();
-        drawBall();
-        drawPaddle();
-        drawBricks();
-
-        function drawBricks() {
-
-            for (let j = 0; j < 3; j++) {
-
-
-                for (let i = 0; i < 6; i++) {
-                    const brickOffset = 8;
-                    const brickW = 40;
-                    ctx.beginPath();
-                    ctx.rect(10 + i * (brickW + brickOffset), 20 + (10 + brickOffset) * j, brickW, 10);
-                    ctx.fillStyle = ""
-                    ctx.fill()
-                    ctx.closePath();
-
-                }
-            }
-
-        }
-
-        function startGame() {
-            paddleNavigation();
-            if (!interval) {
-                interval = setInterval(() => {
-                    detectCollision();
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    x += dx;
-                    y += dy;
-                    if (!checkgameOver(x, y)) {
-                        drawBall();
-                        drawPaddle();
-                        drawBricks();
-                    }
-                }, 20);
-            }
-        }
-
-        function setVariables() {
-            radius = 10;
-            x = canvasW / 2;
-            y = canvasH - radius;
-            dx = 5;
-            dy = -5;
-            paddleW = 50;
-            paddleX = canvasW / 2 - paddleW / 2;
-            paddleY = canvasH - radius;
-        }
-
-        function checkgameOver() {
-            if (y + dy === canvas.height) {
-                alert("game over");
-                // console.log(interval)
-                clearInterval(interval);
-                interval = null;
-                setVariables();
-
-            }
-        }
-
-        function detectCollision() {
-            if (x + dx >= canvasW || x + dx <= 0) {
-                dx *= -1;
-            }
-            if (y + dy > canvasH - radius) {
-
-                if (x + dx > paddleX && x + dx < (paddleX + paddleW)) {
-                    dy = -dy;
-                }
-            }
-
-            if (y + dy <= 0) {
-                dy *= -1;
-            }
-
-        }
-
-        function drawBall() {
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
-            ctx.fillStyle = "green";
-            ctx.fill();
-            ctx.stroke();
-            ctx.closePath();
-        }
-
-        function drawPaddle() {
-            if (leftPressed && paddleX > 0)
-                paddleX -= 5;
-            if (rightPressed && (paddleX + paddleW) < canvasW)
-                paddleX += 5;
-            ctx.beginPath();
-            ctx.rect(paddleX, paddleY, paddleW, 20);
-            ctx.fillStyle = "green";
-            ctx.fill();
-            ctx.stroke();
-            ctx.closePath();
         }
     </script>
 </body>
